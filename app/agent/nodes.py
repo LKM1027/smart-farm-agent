@@ -272,7 +272,7 @@ class IntentAnalysis(BaseModel):
 # LLM 구조화 출력 모델 (최종 답변 및 제어 명령용)
 # ─────────────────────────────────────────────
 class ControlCommand(BaseModel):
-    target: str = Field(description="제어할 장치 이름 (예: 환기팬, 제습기, 창문 등)")
+    device: str = Field(description="제어할 장치 이름 (예: 환기팬, 제습기, 창문 등)")
     action: str = Field(description="수행할 동작 (예: ON, OFF, OPEN, CLOSE 등)")
     value: Optional[str] = Field(None, description="설정할 값 (예: 50%, 25도 등)")
     reason: str = Field(description="이 제어 동작을 수행하는 이유")
@@ -292,8 +292,8 @@ class AgentResponse(BaseModel):
         unique_devices = set()
         filtered_seq = []
         for cmd in self.control_sequence:
-            if cmd.target not in unique_devices:
-                unique_devices.add(cmd.target)
+            if cmd.device not in unique_devices:
+                unique_devices.add(cmd.device)
                 filtered_seq.append(cmd)
         self.control_sequence = filtered_seq
         return self
@@ -381,7 +381,7 @@ def analyze_query(state: dict) -> dict:
 
         fallback_keywords = ["온도", "습도", "상태", "환경", "얼마나", "어때", "co2", "알려줘"]
         is_sensor_needed = any(kw in query.replace(" ", "") for kw in fallback_keywords)
-rag_keywords = ["어떻게", "방법", "방제", "대처", "알려줘"]
+        rag_keywords = ["어떻게", "방법", "방제", "대처", "알려줘"]
         is_rag_needed = any(kw in query for kw in rag_keywords)
         reason = "LLM 통신 실패로 인한 키워드 룰 기반 강제 맵핑"
 
@@ -392,7 +392,6 @@ rag_keywords = ["어떻게", "방법", "방제", "대처", "알려줘"]
             "is_rag_needed": is_rag_needed,
             "sensor_data": None  # 새로운 턴 시작 시 이전 상태 초기화
         }
-
 
 # ─────────────────────────────────────────────
 # 노드 3: 센서 데이터 조회
@@ -617,7 +616,7 @@ def generate_answer(state: dict) -> dict:
         print(f"[Node: generate_answer] 답변 생성 실패: {e}")
         answer = (
             "죄송합니다. 현재 AI 서버(Gemini) 모델과의 통신이 원활하지 않아 답변을 생성하지 못했습니다.\n\n"
-            f"[디버그용 수집 데이터]\n- 센서: {sensor_data_str}\n- 진단: {diagnosis_str}"
+            f"[디버그용 수집 데이터]\n- 센서: {sensor_data_str}"
         )
         control_sequence_dicts = []
         control_sequence_objs = None
@@ -625,18 +624,8 @@ def generate_answer(state: dict) -> dict:
         
     print(f"[Node: generate_answer] 생성된 답변 길이: {len(answer)}자, 제어 명령 수: {len(control_sequence_dicts)}, Modbus 프레임 수: {len(modbus_frames) if modbus_frames else 0}")
 
-    # AgentFinalResponse 객체로 패킹
-    final_response = AgentFinalResponse(
-        intents=Intents(**intents),
-        sensor_data=sensor_data,
-        control_sequence=control_sequence_objs if control_sequence_objs else None,
-        answer=answer,
-        modbus_frames=modbus_frames,
-    )
-
     return {
         "answer": answer,
         "control_sequence": control_sequence_dicts,
-        "modbus_frames": modbus_frames,
-        "final_response": final_response,
+        "modbus_frames": modbus_frames
     }

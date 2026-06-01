@@ -188,6 +188,13 @@ function renderMarkdown(md) {
 </script>
 
 <style scoped>
+/* 채팅 메시지와 리포트 콘텐츠의 줄바꿈(\n)을 화면에 그대로 반영합니다 */
+:deep(.chat-message-content),
+:deep(.report-content),
+.whitespace-pre-wrap {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
 .overlay-fade-enter-active, .overlay-fade-leave-active { transition: opacity 0.4s ease; }
 .overlay-fade-enter-from, .overlay-fade-leave-to       { opacity: 0; }
 

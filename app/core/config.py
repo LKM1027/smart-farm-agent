@@ -8,10 +8,9 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     
     # API Keys
-    OPENAI_API_KEY: str
     GEMINI_API_KEY: str
     SMARTFARM_API_KEY: str
-    SMARTFARM_FACILITY_ID: str = "TOMATO_FARM_001"
+    SMARTFARM_FACILITY_ID: str = "PF_0025298_01"
     
     # Settings Config to load from .env file
     model_config = SettingsConfigDict(

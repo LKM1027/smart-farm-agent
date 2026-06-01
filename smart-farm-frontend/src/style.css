@@ -1,0 +1,26 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    @apply bg-slate-50 text-slate-950 font-sans antialiased;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+  #app { min-height: 100vh; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #f8fafc; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+}
+
+@layer components {
+  .report-content {
+    color: #0f172a;
+  }
+}

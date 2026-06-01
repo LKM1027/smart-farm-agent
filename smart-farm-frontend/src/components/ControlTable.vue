@@ -1,29 +1,19 @@
 <template>
   <section class="flex h-full flex-col bg-white border-t-0 border-transparent overflow-hidden">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-      <div>
-        <p class="text-xs uppercase tracking-[0.18em] text-slate-500">실행 계획 & 물리 제어</p>
-        <h2 class="text-sm font-semibold text-slate-900">KS X 3265 / KS X 3267 제어</h2>
-      </div>
-      <div class="flex items-center gap-3 text-[11px] font-semibold text-slate-500">
-        <span v-if="store.hasControlData" class="rounded-md border border-slate-200 bg-slate-50 px-3 py-1 text-[#2F6D43]">
-          {{ store.controlSequence.length }}개 명령
-        </span>
-        <span v-if="hasModbusData" class="rounded-md border border-slate-200 bg-slate-50 px-3 py-1 text-[#2F6D43]">RS-485 LIVE</span>
-      </div>
-    </div>
-
+    
     <div class="flex-1 grid grid-cols-2 divide-x divide-slate-200 min-h-0 overflow-hidden">
       <div class="flex flex-col min-h-0 overflow-hidden">
-        <div class="px-4 py-3 bg-slate-50 border-b border-slate-200">
+        <div class="px-4 py-3 bg-slate-0 border-b border-slate-200">
           <div class="text-[10px] uppercase tracking-[0.18em] font-semibold text-slate-500">제어 시퀀스</div>
-          <div class="text-[10px] text-slate-500">KS X 3265:2022 / KS X 3288:2022</div>
         </div>
 
-        <div v-if="!store.hasControlData && !store.isPageLoading" class="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center text-slate-500">
-          <div class="w-12 h-12 rounded-md border border-slate-200 bg-slate-50 grid place-items-center text-2xl">▶</div>
-          <p class="text-xs font-medium">에이전트가 제어 명령을 생성하면 여기에 표시됩니다.</p>
-          <p class="text-[10px]">KS X 3265/3288 표준 준거</p>
+        <div v-if="!store.hasControlData && !store.isPageLoading" class="flex-1 flex flex-col items-center justify-center text-center gap-3 p-6">
+          <div class="w-12 h-12 rounded-lg border border-slate-200 grid place-items-center text-slate-400 bg-slate-50 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-5 w-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5" />
+            </svg>
+          </div>
+          <p class="text-xs text-slate-400 font-medium tracking-wide">제어 시퀀스 대기 중...</p>
         </div>
 
         <div v-else-if="store.isPageLoading" class="flex-1 px-4 py-3 flex flex-col gap-2">
@@ -53,12 +43,12 @@
                     <span class="text-[11px] font-semibold text-slate-900">{{ deviceName(cmd.device) }}</span>
                   </td>
                   <td class="py-3 px-2">
-                    <span class="inline-flex rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-mono text-slate-600">
+                    <span class="inline-flex rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-mono text-slate-600 shadow-sm">
                       {{ cmd.device }}
                     </span>
                   </td>
                   <td class="py-3 px-2">
-                    <span :class="['inline-flex rounded-md border px-2 py-1 text-[10px] font-semibold', actionClass(cmd.action)]">
+                    <span :class="['inline-flex rounded-md border px-2 py-1 text-[10px] font-semibold shadow-sm', actionClass(cmd.action)]">
                       {{ cmd.action }}
                     </span>
                   </td>
@@ -83,18 +73,20 @@
         <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between text-[10px] text-slate-500">
           <div>
             <div class="font-semibold text-slate-700">RS-485 MODBUS I/O TERMINAL</div>
-            <div class="mt-1">KS X 3267:2022</div>
           </div>
           <div class="flex items-center gap-2">
             <span :class="hasModbusData ? 'text-[#2F6D43]' : 'text-slate-500'">{{ hasModbusData ? 'CONNECTED' : 'IDLE' }}</span>
           </div>
         </div>
 
-        <div ref="terminalRef" class="flex-1 overflow-y-auto p-4 font-mono text-sm leading-6 space-y-2">
-          <div v-if="!hasModbusData && !store.isPageLoading" class="h-full flex flex-col items-center justify-center gap-3 text-slate-500">
-            <div class="text-3xl">■</div>
-            <p class="text-[10px]">에이전트 명령 대기 중...</p>
-            <p class="text-[9px]">RS-485 버스 준비 완료 | Baud: 19200</p>
+        <div ref="terminalRef" class="flex-1 overflow-y-auto p-4 font-mono text-sm leading-6 space-y-2 min-h-0">
+          <div v-if="!hasModbusData && !store.isPageLoading" class="h-full flex flex-col items-center justify-center text-center gap-3 p-6">
+            <div class="w-12 h-12 rounded-lg border border-slate-200 grid place-items-center text-slate-400 bg-slate-50 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-5 w-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z" />
+              </svg>
+            </div>
+            <p class="text-xs text-slate-400 font-medium tracking-wide">에이전트 명령 대기 중...</p>
           </div>
 
           <div v-else-if="store.isPageLoading && !hasModbusData" class="text-slate-700">
@@ -123,8 +115,8 @@
         </div>
 
         <div class="px-4 py-3 border-t border-slate-200 bg-slate-100 text-[10px] text-slate-500 flex items-center justify-between">
-          <span>Baud: 19200 | Parity: Even | Stop: 1 | RS-485 Half-Duplex</span>
-          <span>{{ store.modbusFrames.length }} lines</span>
+          <span>RS-485 • 19200 bps</span>
+          <span>Lines: {{ store.modbusFrames.length }}</span>
         </div>
       </div>
     </div>

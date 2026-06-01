@@ -2,9 +2,17 @@
   <section class="flex flex-col gap-4">
     <div class="flex items-center justify-between">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Environment Sensors</p>
         <h2 class="mt-1 text-sm font-semibold text-slate-900">실시간 온실 센서</h2>
       </div>
+      <button
+        type="button"
+        class="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60"
+        :disabled="store.isInjectingAnomaly"
+        @click="store.injectHeatwaveAnomaly"
+      >
+        <span v-if="store.isInjectingAnomaly" class="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600"></span>
+        {{ store.isInjectingAnomaly ? '주입 중...' : '폭염 시뮬레이션 주입' }}
+      </button>
     </div>
 
     <div class="grid gap-4 lg:grid-cols-3">

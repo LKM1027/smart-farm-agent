@@ -1,17 +1,6 @@
 <template>
   <section class="flex h-full flex-col bg-white border-t-0 border-transparent overflow-hidden">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-      <div>
-        <p class="text-xs uppercase tracking-[0.18em] text-slate-500">에이전트</p>
-        <h2 class="text-sm font-semibold text-slate-900">브리핑 룸</h2>
-      </div>
-      <div class="flex items-center gap-2 text-xs font-semibold">
-        <span v-if="store.isRagActive" class="rounded-md border border-slate-200 bg-slate-50 px-3 py-1 text-[#2F6D43]">RAG</span>
-        <span v-else-if="store.isPageLoading" class="rounded-md border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700">추론중</span>
-        <span v-else class="rounded-md border border-slate-200 bg-slate-50 px-3 py-1 text-slate-500">대기중</span>
-      </div>
-    </div>
-
+  
     <Transition name="banner-slide">
       <div
         v-if="store.isRagActive"
@@ -29,7 +18,11 @@
 
     <div ref="chatContainerRef" class="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4 min-h-0">
       <div v-if="store.chatHistory.length === 0" class="flex flex-1 flex-col items-center justify-center text-center py-8 gap-4">
-        <div class="w-16 h-16 rounded-md border border-slate-200 grid place-items-center text-3xl bg-slate-50">💬</div>
+        <div class="w-12 h-12 rounded-lg border border-slate-200 grid place-items-center text-slate-400 bg-slate-50 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-5 w-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501c1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+          </svg>
+        </div>
         <div>
           <p class="text-sm font-semibold text-slate-900">스마트팜 에이전트</p>
           <p class="mt-2 text-xs text-slate-500 leading-relaxed">온실 환경 질문으로 실시간 진단 및 제어 명령을 생성합니다.</p>

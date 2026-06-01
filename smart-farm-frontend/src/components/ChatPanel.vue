@@ -1,24 +1,13 @@
 <template>
-  <section class="flex h-full flex-col bg-white border border-slate-200 rounded-sm overflow-hidden">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-      <div>
-        <p class="text-xs uppercase tracking-[0.18em] text-slate-500">에이전트</p>
-        <h2 class="text-sm font-semibold text-slate-900">브리핑 룸</h2>
-      </div>
-      <div class="flex items-center gap-2 text-xs font-semibold">
-        <span v-if="store.isRagActive" class="rounded-sm border border-slate-200 bg-slate-50 px-3 py-1 text-[#2F6D43]">RAG</span>
-        <span v-else-if="store.isPageLoading" class="rounded-sm border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700">추론중</span>
-        <span v-else class="rounded-sm border border-slate-200 bg-slate-50 px-3 py-1 text-slate-500">대기중</span>
-      </div>
-    </div>
-
+  <section class="flex h-full flex-col bg-white border-t-0 border-transparent overflow-hidden">
+  
     <Transition name="banner-slide">
       <div
         v-if="store.isRagActive"
-        class="mx-5 mt-4 rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700"
+        class="mx-5 mt-4 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700"
       >
         <div class="flex items-center gap-3">
-          <div class="h-9 w-9 rounded-sm bg-white grid place-items-center text-lg">🔎</div>
+          <div class="h-9 w-9 rounded-md bg-white grid place-items-center text-lg">🔎</div>
           <div>
             <p class="text-sm font-semibold text-slate-900">농진청 가이드북 DB 탐색 중</p>
             <p class="text-xs text-slate-500 mt-1">ChromaDB 벡터 검색 기반</p>
@@ -29,7 +18,11 @@
 
     <div ref="chatContainerRef" class="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4 min-h-0">
       <div v-if="store.chatHistory.length === 0" class="flex flex-1 flex-col items-center justify-center text-center py-8 gap-4">
-        <div class="w-16 h-16 rounded-sm border border-slate-200 grid place-items-center text-3xl">💬</div>
+        <div class="w-12 h-12 rounded-lg border border-slate-200 grid place-items-center text-slate-400 bg-slate-50 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-5 w-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501c1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+          </svg>
+        </div>
         <div>
           <p class="text-sm font-semibold text-slate-900">스마트팜 에이전트</p>
           <p class="mt-2 text-xs text-slate-500 leading-relaxed">온실 환경 질문으로 실시간 진단 및 제어 명령을 생성합니다.</p>
@@ -39,7 +32,7 @@
             v-for="hint in QUICK_HINTS"
             :key="hint"
             type="button"
-            class="rounded-sm border border-slate-200 bg-white px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50"
+            class="rounded-md border border-slate-200 bg-white px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50"
             @click="$emit('quickHint', hint)"
           >{{ hint }}</button>
         </div>
@@ -54,8 +47,8 @@
           <div class="text-[10px] text-slate-400">
             {{ msg.role === 'user' ? '나' : '에이전트' }} · {{ formatTime(msg.timestamp) }}
           </div>
-          <div :class="['max-w-[85%] rounded-sm border px-4 py-3', msg.role === 'user' ? 'bg-slate-100 border-slate-200 text-slate-900' : 'bg-slate-50 border-slate-200 text-slate-900']">
-            <div v-if="msg.isFallback" class="mb-2 inline-flex items-center gap-2 rounded-sm border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-medium text-amber-700">
+          <div :class="['max-w-[85%] rounded-md border px-4 py-3', msg.role === 'user' ? 'bg-slate-100 border-slate-200 text-slate-900' : 'bg-slate-50 border-slate-200 text-slate-900']">
+            <div v-if="msg.isFallback" class="mb-2 inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-medium text-amber-700">
               오프라인 시연 모드
             </div>
             <div class="prose prose-sm text-slate-800" v-html="renderMarkdown(msg.text)"></div>
@@ -69,7 +62,7 @@
       </div>
     </div>
 
-    <div class="px-5 pb-5 pt-3 shrink-0 border-t border-slate-200">
+    <div class="px-5 pb-5 pt-3 shrink-0 border-t border-slate-200 bg-white">
       <div class="flex items-end gap-3">
         <textarea
           id="chat-input"
@@ -77,7 +70,7 @@
           v-model="inputText"
           placeholder="온실 상태를 문의하세요..."
           rows="1"
-          class="flex-1 min-h-[48px] resize-none rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-[#2F6D43] focus:outline-none focus:ring-1 focus:ring-[#2F6D43]/20"
+          class="flex-1 min-h-[48px] resize-none rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-[#2F6D43] focus:outline-none focus:ring-1 focus:ring-[#2F6D43]/20"
           :disabled="store.isPageLoading"
           @keydown.enter.prevent="handleEnter($event)"
           @input="autoResize"
@@ -87,7 +80,7 @@
           id="send-button"
           type="button"
           :disabled="store.isPageLoading || !inputText.trim()"
-          class="shrink-0 rounded-sm bg-[#2F6D43] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#254f38] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
+          class="shrink-0 rounded-md bg-[#2F6D43] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#254f38] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
           @click="handleSend"
         >
           <template v-if="store.isPageLoading">
@@ -110,10 +103,11 @@ const textareaRef = ref(null)
 const chatContainerRef = ref(null)
 
 const QUICK_HINTS = [
-  '현재 온실 온도와 습도 상태 확인',
-  '적정 관수 계획을 알려줘',
-  'CO₂ 농도 관리 방법은?',
-  '토마토 생육 이상 징후 점검'
+  '현재 온실의 적정 VPD(수분압차) 상태 분석해 줘',
+  '누적 광량 기반 양액(EC/pH) 공급량 추천',
+  '폭염 대비 차광막 및 환기창 제어 시나리오',
+  '토마토 생육 이상 징후 및 잎마름병 점검',
+  'CO₂ 농도 관리 및 환기 스케줄은?'
 ]
 
 const emit = defineEmits(['quickHint'])

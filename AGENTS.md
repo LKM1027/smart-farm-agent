@@ -188,7 +188,7 @@ app.include_router(reports.router, prefix="/api/reports", tags=["Weekly Reports"
 ```python
 # app/agent/nodes.py — UNSUPPORTED_CROP_KEYWORDS
 파인애플, 딸기, 오이, 상추, 고추, 파프리카, 수박, 멜론,
-감자, 고구마, 벼, 쌀, 옥수수, 콩, 사과, 배, 포도
+감자, 고구마, 벼, 쌀, 옥수수, 콩, 사과, 포도
 ```
 
 지원 작물을 추가하려면: `nodes.py`의 `UNSUPPORTED_CROP_KEYWORDS`에서 해당 작물을 제거하고 이 문서의 목록도 업데이트하세요.

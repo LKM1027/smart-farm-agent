@@ -3,12 +3,9 @@
     <div class="mx-auto flex max-w-[1800px] flex-col gap-5">
 
       <!-- ── 헤더 ──────────────────────────────────────────── -->
-      <section class="relative overflow-hidden rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section class="relative overflow-hidden rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-600">
-              AI Weekly Report Archive
-            </p>
             <h1 class="mt-2 text-2xl font-bold text-slate-900">주간 AI 생육 분석 리포트</h1>
             <p class="mt-1 text-sm text-slate-500">
               최근 7일간 센서 데이터를 일별 집계 → Gemini AI가 생육 분석 리포트 자동 생성
@@ -21,7 +18,7 @@
             type="button"
             :disabled="store.isGeneratingReport"
             @click="handleGenerate"
-            class="group relative inline-flex min-h-12 items-center gap-2.5 overflow-hidden rounded-lg border border-emerald-500/40 bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all duration-200 hover:from-emerald-500 hover:to-teal-500 hover:shadow-emerald-600/30 disabled:cursor-wait disabled:opacity-60"
+            class="group relative inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:cursor-wait disabled:opacity-60"
           >
             <span v-if="store.isGeneratingReport" class="flex items-center gap-2">
               <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -35,7 +32,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.346.346A3.51 3.51 0 0115 16.5h-6a3.51 3.51 0 01-2.684-1.254l-.346-.346z"/>
               </svg>
-              수동 리포트 생성
+              AI 리포트 생성
             </span>
           </button>
         </div>
@@ -43,7 +40,7 @@
         <!-- 에러 메시지 -->
         <div
           v-if="store.reportError"
-          class="relative mt-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+          class="relative mt-4 flex items-start gap-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
         >
           <svg class="mt-0.5 h-4 w-4 shrink-0 text-red-600" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
@@ -56,9 +53,8 @@
       <div class="grid min-h-[680px] gap-5 lg:grid-cols-[320px_1fr]">
 
         <!-- 좌측: 리포트 목록 -->
-        <aside class="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <aside class="flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           <div class="border-b border-slate-200 px-5 py-4">
-            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Archive</p>
             <h2 class="mt-1 text-base font-semibold text-slate-900">리포트 보관함</h2>
             <p class="mt-0.5 text-xs text-slate-500">
               총 <span class="font-bold text-emerald-600">{{ store.weeklyReports.length }}</span>건
@@ -83,7 +79,7 @@
               </svg>
             </div>
             <p class="text-sm font-medium text-slate-700">생성된 리포트 없음</p>
-            <p class="text-xs text-slate-500">우측 상단의 "수동 리포트 생성" 버튼을 눌러 첫 리포트를 만들어 보세요.</p>
+            <p class="text-xs text-slate-500">우측 상단의 "AI 리포트 생성" 버튼을 눌러 첫 리포트를 만들어 보세요.</p>
           </div>
 
           <!-- 리포트 목록 -->
@@ -125,7 +121,7 @@
         </aside>
 
         <!-- 우측: 리포트 본문 뷰어 -->
-        <main class="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <main class="flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
 
           <!-- 리포트 미선택 상태 -->
           <div

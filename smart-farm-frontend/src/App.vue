@@ -5,7 +5,7 @@
       <div class="flex flex-col sm:flex-row sm:items-center gap-6 lg:gap-8">
         <!-- 로고 -->
         <div class="flex items-center gap-3">
-          <img src="./assets/logo2.png" alt="SmartFarm CPS Logo" class="h-12 w-auto object-contain drop-shadow-sm" />
+          <img src="./assets/logo3.png" alt="SmartFarm CPS Logo" class="h-12 w-auto object-contain drop-shadow-sm" />
           <div>
             <p class="text-lg font-bold tracking-tight text-slate-900">SmartFarm CPS</p>
             <p class="text-xs font-medium text-slate-500 opacity-75">AI 지능형 관제 시스템</p>

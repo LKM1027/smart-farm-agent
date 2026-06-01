@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-[calc(100vh-72px)] bg-slate-100 p-5 lg:p-6">
     <div class="mx-auto flex max-w-[1800px] flex-col gap-5">
-      <section class="overflow-hidden border border-slate-200 bg-white shadow-sm">
+      <section class="overflow-hidden rounded-lg border border-slate-200 bg-white">
         <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Greenhouse Control Tower</p>
@@ -11,7 +11,7 @@
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div
               v-if="store.simulationNotice"
-              class="max-w-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700"
+              class="max-w-xl rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700"
             >
               {{ store.simulationNotice }}
             </div>
@@ -20,7 +20,7 @@
             <button
               id="btn-dashboard-generate-report"
               type="button"
-              class="inline-flex min-h-11 items-center justify-center gap-2 border border-emerald-600 bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
+              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-emerald-600 bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
               :disabled="store.isGeneratingReport"
               @click="handleGenerateReport"
             >
@@ -33,7 +33,7 @@
 
             <button
               type="button"
-              class="inline-flex min-h-11 items-center justify-center border border-red-700 bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+              class="inline-flex min-h-11 items-center justify-center rounded-md border border-red-700 bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
               :disabled="store.isInjectingAnomaly"
               @click="store.injectHeatwaveAnomaly"
             >
@@ -48,7 +48,7 @@
       </section>
 
       <section class="grid min-h-[620px] flex-1 gap-5 xl:grid-cols-2">
-        <div class="flex min-h-[560px] flex-col overflow-hidden border border-slate-200 bg-white shadow-sm">
+        <div class="flex min-h-[560px] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white">
           <div class="border-b border-slate-200 px-5 py-4">
             <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Intelligence</p>
             <h2 class="mt-2 text-xl font-semibold text-slate-950">스마트팜 에이전트 브리핑 룸</h2>
@@ -58,7 +58,7 @@
           </div>
         </div>
 
-        <div class="flex min-h-[560px] flex-col overflow-hidden border border-slate-200 bg-white shadow-sm">
+        <div class="flex min-h-[560px] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white">
           <div class="border-b border-slate-200 px-5 py-4">
             <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Hardware Control</p>
             <h2 class="mt-2 text-xl font-semibold text-slate-950">하드웨어 제어 테이블 및 통신 로그</h2>

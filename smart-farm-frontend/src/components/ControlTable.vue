@@ -1,15 +1,15 @@
 <template>
-  <section class="flex h-full flex-col bg-white border border-slate-200 rounded-sm overflow-hidden">
+  <section class="flex h-full flex-col bg-white border-t-0 border-transparent overflow-hidden">
     <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
       <div>
         <p class="text-xs uppercase tracking-[0.18em] text-slate-500">실행 계획 & 물리 제어</p>
         <h2 class="text-sm font-semibold text-slate-900">KS X 3265 / KS X 3267 제어</h2>
       </div>
       <div class="flex items-center gap-3 text-[11px] font-semibold text-slate-500">
-        <span v-if="store.hasControlData" class="rounded-sm border border-slate-200 bg-slate-50 px-3 py-1 text-[#2F6D43]">
+        <span v-if="store.hasControlData" class="rounded-md border border-slate-200 bg-slate-50 px-3 py-1 text-[#2F6D43]">
           {{ store.controlSequence.length }}개 명령
         </span>
-        <span v-if="hasModbusData" class="rounded-sm border border-slate-200 bg-slate-50 px-3 py-1 text-[#2F6D43]">RS-485 LIVE</span>
+        <span v-if="hasModbusData" class="rounded-md border border-slate-200 bg-slate-50 px-3 py-1 text-[#2F6D43]">RS-485 LIVE</span>
       </div>
     </div>
 
@@ -21,13 +21,13 @@
         </div>
 
         <div v-if="!store.hasControlData && !store.isPageLoading" class="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center text-slate-500">
-          <div class="w-12 h-12 rounded-sm border border-slate-200 grid place-items-center text-2xl">▶</div>
+          <div class="w-12 h-12 rounded-md border border-slate-200 bg-slate-50 grid place-items-center text-2xl">▶</div>
           <p class="text-xs font-medium">에이전트가 제어 명령을 생성하면 여기에 표시됩니다.</p>
           <p class="text-[10px]">KS X 3265/3288 표준 준거</p>
         </div>
 
         <div v-else-if="store.isPageLoading" class="flex-1 px-4 py-3 flex flex-col gap-2">
-          <div v-for="i in 3" :key="i" class="h-10 rounded-sm bg-slate-100 animate-pulse"></div>
+          <div v-for="i in 3" :key="i" class="h-10 rounded-md bg-slate-100 animate-pulse"></div>
         </div>
 
         <Transition name="table-fade">
@@ -53,12 +53,12 @@
                     <span class="text-[11px] font-semibold text-slate-900">{{ deviceName(cmd.device) }}</span>
                   </td>
                   <td class="py-3 px-2">
-                    <span class="inline-flex rounded-sm border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-mono text-slate-600">
+                    <span class="inline-flex rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-mono text-slate-600">
                       {{ cmd.device }}
                     </span>
                   </td>
                   <td class="py-3 px-2">
-                    <span :class="['inline-flex rounded-sm border px-2 py-1 text-[10px] font-semibold', actionClass(cmd.action)]">
+                    <span :class="['inline-flex rounded-md border px-2 py-1 text-[10px] font-semibold', actionClass(cmd.action)]">
                       {{ cmd.action }}
                     </span>
                   </td>

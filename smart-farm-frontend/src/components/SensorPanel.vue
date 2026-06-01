@@ -5,14 +5,10 @@
         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Environment Sensors</p>
         <h2 class="mt-1 text-sm font-semibold text-slate-900">실시간 온실 센서</h2>
       </div>
-      <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
-        <span v-if="store.isSensorActive" class="border border-emerald-200 bg-emerald-50 px-3 py-1 text-[#2F6D43]">LIVE</span>
-        <span v-else class="border border-slate-200 bg-slate-50 px-3 py-1 text-slate-500">POLLING</span>
-      </div>
     </div>
 
     <div class="grid gap-4 lg:grid-cols-3">
-      <div class="border border-slate-200 bg-slate-50 p-5">
+      <div class="rounded-md border border-slate-200 bg-slate-50 p-5 overflow-hidden">
         <div class="mb-2 flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">온도 (TI)</span>
           <span class="text-sm text-slate-500">℃</span>
@@ -21,20 +17,20 @@
           <span :class="['text-5xl font-extrabold leading-none', tempStatus.color]">
             {{ store.hasSensorData ? store.sensorData.temperature : '--' }}
           </span>
-          <span :class="['mb-1 px-2 py-1 text-[11px] font-semibold', tempStatus.badgeClass]">
+          <span :class="['rounded-md mb-1 px-2 py-1 text-[11px] font-semibold', tempStatus.badgeClass]">
             {{ tempStatus.label }}
           </span>
         </div>
-        <div class="mt-4 h-2 overflow-hidden bg-slate-200">
+        <div class="mt-4 h-2 overflow-hidden bg-slate-200 rounded-full">
           <div
-            class="h-full transition-all duration-700"
+            class="h-full transition-all duration-700 rounded-full"
             :class="tempStatus.barColor"
             :style="{ width: store.hasSensorData ? `${Math.min(100, (store.sensorData.temperature / 40) * 100)}%` : '0%' }"
           ></div>
         </div>
       </div>
 
-      <div class="border border-slate-200 bg-slate-50 p-5">
+      <div class="rounded-md border border-slate-200 bg-slate-50 p-5 overflow-hidden">
         <div class="mb-2 flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">습도 (HI)</span>
           <span class="text-sm text-slate-500">%</span>
@@ -43,20 +39,20 @@
           <span :class="['text-5xl font-extrabold leading-none', humidStatus.color]">
             {{ store.hasSensorData ? store.sensorData.humidity : '--' }}
           </span>
-          <span :class="['mb-1 px-2 py-1 text-[11px] font-semibold', humidStatus.badgeClass]">
+          <span :class="['rounded-md mb-1 px-2 py-1 text-[11px] font-semibold', humidStatus.badgeClass]">
             {{ humidStatus.label }}
           </span>
         </div>
-        <div class="mt-4 h-2 overflow-hidden bg-slate-200">
+        <div class="mt-4 h-2 overflow-hidden bg-slate-200 rounded-full">
           <div
-            class="h-full transition-all duration-700"
+            class="h-full transition-all duration-700 rounded-full"
             :class="humidStatus.barColor"
             :style="{ width: store.hasSensorData ? `${Math.min(100, store.sensorData.humidity)}%` : '0%' }"
           ></div>
         </div>
       </div>
 
-      <div class="border border-slate-200 bg-slate-50 p-5">
+      <div class="rounded-md border border-slate-200 bg-slate-50 p-5 overflow-hidden">
         <div class="mb-2 flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">CO2 (CI)</span>
           <span class="text-sm text-slate-500">ppm</span>
@@ -65,13 +61,13 @@
           <span :class="['text-5xl font-extrabold leading-none', co2Status.color]">
             {{ store.hasSensorData ? store.sensorData.co2 : '--' }}
           </span>
-          <span :class="['mb-1 px-2 py-1 text-[11px] font-semibold', co2Status.badgeClass]">
+          <span :class="['rounded-md mb-1 px-2 py-1 text-[11px] font-semibold', co2Status.badgeClass]">
             {{ co2Status.label }}
           </span>
         </div>
-        <div class="mt-4 h-2 overflow-hidden bg-slate-200">
+        <div class="mt-4 h-2 overflow-hidden bg-slate-200 rounded-full">
           <div
-            class="h-full transition-all duration-700"
+            class="h-full transition-all duration-700 rounded-full"
             :class="co2Status.barColor"
             :style="{ width: store.hasSensorData ? `${Math.min(100, (store.sensorData.co2 / 1500) * 100)}%` : '0%' }"
           ></div>
@@ -79,7 +75,7 @@
       </div>
     </div>
 
-    <div v-if="store.hasSensorData" class="border border-slate-200 bg-white px-4 py-3 text-[10px] text-slate-500">
+    <div v-if="store.hasSensorData" class="rounded-md border border-slate-200 bg-white px-4 py-3 text-[10px] text-slate-500">
       시설 ID: {{ store.sensorData.facility_id ?? 'N/A' }}
     </div>
   </section>

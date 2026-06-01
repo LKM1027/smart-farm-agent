@@ -15,7 +15,6 @@ langchain-community>=0.2.0
 langchain-text-splitters>=0.2.0
 langchain-chroma>=0.1.0
 langgraph>=0.1.0
-langchain-openai>=0.1.0
 langchain-google-genai>=1.0.0
 
 # Image Processing
@@ -25,3 +24,8 @@ opencv-python-headless>=4.8.0
 # Utils
 requests>=2.31.0
 python-dotenv>=1.0.0
+
+# Testing — CI/CD 피드백 루프
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+httpx>=0.27.0

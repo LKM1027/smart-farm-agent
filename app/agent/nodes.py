@@ -492,7 +492,7 @@ def retrieve_knowledge(state: dict) -> dict:
 
 UNSUPPORTED_CROP_KEYWORDS = {
     "파인애플", "딸기", "오이", "상추", "고추", "파프리카", "수박", "멜론",
-    "감자", "고구마", "벼", "쌀", "옥수수", "콩", "사과", "배", "포도",
+    "감자", "고구마", "벼", "쌀", "옥수수", "콩", "사과", "포도",
     "banana", "pineapple", "strawberry", "cucumber", "lettuce", "pepper",
 }
 

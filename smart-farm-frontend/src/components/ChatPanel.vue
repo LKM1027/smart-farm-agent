@@ -27,7 +27,7 @@
           <p class="text-sm font-semibold text-slate-900">스마트팜 에이전트</p>
           <p class="mt-2 text-xs text-slate-500 leading-relaxed">온실 환경 질문으로 실시간 진단 및 제어 명령을 생성합니다.</p>
         </div>
-        <div class="grid w-full max-w-md gap-2">
+        <div class="grid w-full max-w-2xl gap-2">
           <button
             v-for="hint in QUICK_HINTS"
             :key="hint"
@@ -51,6 +51,24 @@
             <div v-if="msg.isFallback" class="mb-2 inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-medium text-amber-700">
               오프라인 시연 모드
             </div>
+            
+            <!-- 답변 출처 배지 추가 -->
+            <div v-if="msg.role === 'agent' && msg.answerSource" class="mb-3 flex flex-wrap gap-2">
+              <span v-if="msg.answerSource === 'RAG'" class="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700 shadow-sm">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                공인 농업 지침 기반
+              </span>
+              <span v-else-if="msg.answerSource === 'LLM_PARAMETRIC'" class="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700 shadow-sm">
+                <span class="text-blue-500">ℹ️</span> AI 일반 지식 기반
+              </span>
+              <span v-else-if="msg.answerSource === 'LLM_ERROR'" class="inline-flex items-center gap-1.5 rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-[10px] font-bold text-rose-700 shadow-sm">
+                ⚠️ 시스템 통신 오류
+              </span>
+            </div>
+
             <div class="prose prose-sm text-slate-800" v-html="renderMarkdown(msg.text)"></div>
           </div>
         </div>
@@ -103,11 +121,10 @@ const textareaRef = ref(null)
 const chatContainerRef = ref(null)
 
 const QUICK_HINTS = [
-  '현재 온실의 적정 VPD(수분압차) 상태 분석해 줘',
-  '누적 광량 기반 양액(EC/pH) 공급량 추천',
-  '폭염 대비 차광막 및 환기창 제어 시나리오',
-  '토마토 생육 이상 징후 및 잎마름병 점검',
-  'CO₂ 농도 관리 및 환기 스케줄은?'
+  '지난 24시간 동안 작물이 스트레스를 받았을 만한 환경 변화가 있었는지 분석해줘',
+  '내일 비 예보가 있어. 일조량 부족에 대비해서 오늘 어떤 조치를 해야 할까?',
+  '토마토 당도를 높이고 싶어. 농진청 가이드에 나온 수분 조절법 알려줘',
+  '요즘 아침마다 안개가 심하네. 온실 내부 습도를 어떻게 관리해야 작물에 무리가 안 갈까?'
 ]
 
 const emit = defineEmits(['quickHint'])

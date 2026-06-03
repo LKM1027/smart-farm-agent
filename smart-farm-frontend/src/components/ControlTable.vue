@@ -30,6 +30,7 @@
                   <th class="py-3 px-2 text-[10px] font-semibold text-slate-500">코드</th>
                   <th class="py-3 px-2 text-[10px] font-semibold text-slate-500">액션</th>
                   <th class="py-3 px-2 text-[10px] font-semibold text-slate-500">값</th>
+                  <th class="py-3 px-2 text-[10px] font-semibold text-slate-500 text-left">제어 사유</th>
                 </tr>
               </thead>
               <tbody>
@@ -54,9 +55,14 @@
                   </td>
                   <td class="py-3 px-2">
                     <span v-if="cmd.value != null" class="font-extrabold font-mono text-[11px] text-slate-900">
-                      {{ cmd.value }}<span class="text-slate-500 font-normal">{{ valueUnit(cmd.action) }}</span>
+                      {{ cmd.value }}<span class="text-slate-500 font-normal">{{ valueUnit(cmd.device, cmd.action) }}</span>
                     </span>
                     <span v-else class="text-slate-500 text-[11px] font-mono italic">—</span>
+                  </td>
+                  <td class="py-3 px-2 max-w-[150px]">
+                    <p class="text-[10px] leading-relaxed text-slate-500 line-clamp-2" :title="cmd.reason || cmd.description">
+                      {{ cmd.reason || cmd.description || '-' }}
+                    </p>
                   </td>
                 </tr>
               </tbody>
@@ -188,7 +194,9 @@ function actionClass(action) {
   if (action.includes('OFF') || action.includes('CLOSE') || action.includes('STOP')) return 'border-slate-200 bg-slate-100 text-slate-700'
   return 'border-slate-200 bg-slate-100 text-slate-700'
 }
-function valueUnit(action) {
+function valueUnit(device, action) {
+  if (device === 'CC18') return '%'
+  if (device === 'CC22') return '℃'
   if (action.includes('EC')) return ' dS/m'
   if (action.includes('PH')) return ''
   return ''

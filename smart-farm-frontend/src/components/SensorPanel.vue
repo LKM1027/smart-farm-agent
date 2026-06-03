@@ -121,7 +121,7 @@ const tempStatus = computed(() => {
 const humidStatus = computed(() => {
   const h = store.sensorData?.humidity
   if (h == null) return { color: 'text-slate-400', barColor: 'bg-slate-300', label: '--', badgeClass: 'bg-slate-100 text-slate-400' }
-  if (h < 60) return { color: 'text-amber-600', barColor: 'bg-amber-400', label: '건조', badgeClass: 'bg-amber-50 text-amber-700' }
+  if (h < 65) return { color: 'text-amber-600', barColor: 'bg-amber-400', label: '건조', badgeClass: 'bg-amber-50 text-amber-700' }
   if (h > 80) return { color: 'text-indigo-600', barColor: 'bg-indigo-500', label: '과습', badgeClass: 'bg-indigo-50 text-indigo-700' }
   return { color: 'text-[#2F6D43]', barColor: 'bg-emerald-500', label: '적정', badgeClass: 'bg-emerald-50 text-[#2F6D43]' }
 })
@@ -129,7 +129,7 @@ const humidStatus = computed(() => {
 const co2Status = computed(() => {
   const c = store.sensorData?.co2
   if (c == null) return { color: 'text-slate-400', barColor: 'bg-slate-300', label: '--', badgeClass: 'bg-slate-100 text-slate-400' }
-  if (c < 400) return { color: 'text-orange-600', barColor: 'bg-orange-500', label: '부족', badgeClass: 'bg-orange-50 text-orange-700' }
+  if (c < 350) return { color: 'text-orange-600', barColor: 'bg-orange-500', label: '부족', badgeClass: 'bg-orange-50 text-orange-700' }
   if (c > 1000) return { color: 'text-red-600', barColor: 'bg-red-500', label: '과다', badgeClass: 'bg-red-50 text-red-700' }
   return { color: 'text-[#2F6D43]', barColor: 'bg-emerald-500', label: '적정', badgeClass: 'bg-emerald-50 text-[#2F6D43]' }
 })

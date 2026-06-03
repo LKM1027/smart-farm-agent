@@ -7,6 +7,7 @@ from app.agent.tools.smartfarm_api import get_smartfarm_sensor_data
 import json
 import re
 import struct
+from prompt_parser import load_system_prompts
 from pathlib import Path
 
 # DB session and models for node-level persistence (SessionLocal used directly)
@@ -80,7 +81,7 @@ class ModbusTranslator:
     RTU 바이너리 프레임 문자열로 변환합니다.
 
     프레임 구조 (KS X 3267 §4.2, §6.3):
-      [SlaveID(1B)] [FunctionCode(1B)] [RegAddr(2B)] [Payload(nB)] [CRC16(2B)]
+    [SlaveID(1B)] [FunctionCode(1B)] [RegAddr(2B)] [Payload(nB)] [CRC16(2B)]
 
     KS X 3265/3268 구동기 및 KS X 3288 양액기 제어 명령 매핑을 명시적으로 처리합니다.
     """
@@ -272,9 +273,9 @@ class IntentAnalysis(BaseModel):
 # LLM 구조화 출력 모델 (최종 답변 및 제어 명령용)
 # ─────────────────────────────────────────────
 class ControlCommand(BaseModel):
-    device: str = Field(description="제어할 장치 이름 (예: 환기팬, 제습기, 창문 등)")
+    device: str = Field(description="제어할 장치 이름 (예: 환풍기(배기팬), 유동팬, 제습기, 천창, 측창 등)")
     action: str = Field(description="수행할 동작 (예: ON, OFF, OPEN, CLOSE 등)")
-    value: Optional[str] = Field(None, description="설정할 값 (예: 50%, 25도 등)")
+    value: Optional[float] = Field(None, description="설정할 값. 단위를 제외한 순수 숫자만 입력 (예: 50.0, 25.5 등)")
     reason: str = Field(description="이 제어 동작을 수행하는 이유")
 
 from pydantic import model_validator
@@ -510,6 +511,7 @@ def generate_answer(state: dict) -> dict:
     """
     수집된 모든 데이터(센서, RAG 지식)를 종합하여
     최종적으로 사용자에게 반환할 답변과 제어 시퀀스를 생성하는 노드.
+    RAG 지식 공백 시 유연한 우회 정책 및 출처 플래그를 추가로 반영했습니다.
     """
     print("[Node: generate_answer] 최종 답변 생성 시작")
     query = state.get("query", "")
@@ -523,49 +525,67 @@ def generate_answer(state: dict) -> dict:
         else "센서 데이터가 필요하지 않은 질문이거나 조회되지 않음"
     )
 
-    # 검색된 문서 포맷팅
-    docs_str = "\n".join(retrieved_docs) if retrieved_docs else "검색된 관련 지침 없음"
+    # RAG 결과 유무에 따른 동적 프롬프트 지시사항 및 출처 플래그 설정
+    if not retrieved_docs:
+        print("[Node: generate_answer] 3단계(Soft Fallback) 전환: 자율 제어 차단 및 일반 지식 답변")
+        docs_str = "경고: 현재 사용자의 질문과 관련된 공인 농업기술길잡이 지침을 찾을 수 없습니다."
+        answer_source = "LLM_PARAMETRIC"  # 프론트엔드 안내 문구용 플래그
+        llm_temp = 0.4  # 외부 지식 참조가 없으므로 temperature를 낮춰 환각(Hallucination) 방지
+        
+        system_instruction = (
+            "현재 [검색된 농업 지침]이 비어있습니다. 일반적인 농업 지식을 활용해 답변하되 다음 규칙을 **절대적으로** 준수하십시오.\n"
+            "1. 답변 서두에 반드시 '공인 지침서에서 관련 내용을 찾지 못해 AI 검색 기반으로 답변드립니다. 실제 온실 적용 시 주의하십시오.'라는 경고 문구를 포함하십시오.\n"
+            "2. [제어 권한: 차단]: 공인 지침이 없으므로 기계 오작동 방지를 위해 하드웨어 자율 제어는 절대 불가합니다. 어떠한 경우에도 제어 명령을 생성하지 말고 `control_sequence`는 반드시 빈 리스트 `[]`로 반환하십시오.\n"
+            "3. 온실 환경 조절이 필요해 보이는 상황이라면, 농업인(사용자)의 판단하에 직접 수동으로 제어하도록 제안하는 텍스트만 출력하십시오. (예: '일반적인 농업 지식에 따르면 환기가 필요할 수 있습니다. 농업인의 판단하에 대시보드에서 수동으로 환풍기를 가동해 주시기 바랍니다.')"
+        )
+    else:
+        docs_str = "\n".join([doc["content"] for doc in retrieved_docs]) if retrieved_docs else "검색된 관련 지침 없음"
+        answer_source = "RAG"  # 공인 지침 기반 답변 플래그
+        llm_temp = 0.7  # 지침서 기반의 풍부한 추론을 위해 기존 temperature 유지
+        
+        system_instruction = (
+            "현재 [검색된 농업 지침]이 존재합니다. 이를 '농업기술길잡이(토마토)의 공인 지침'으로 간주하고 답변의 핵심 근거로 사용하십시오.\n"
+            "1. 답변 시작 시 혹은 근거 제시 시 \"농업기술길잡이(토마토) 지침에 따르면...\"이라는 문구를 반드시 포함하여 신뢰도를 높이십시오.\n"
+            "2. [제어 권한: 승인]: 공인 지침에 명확한 근거가 있고, 제공된 [수집된 센서 데이터]가 그 기준을 벗어났다면, 적극적으로 환경 개선을 위한 제어 장치(환풍기, 창문 개폐 등) 명령을 `control_sequence`에 포함하여 자율 제어를 수행하십시오."
+        )
+        
+    tomato_prompt, main_template = load_system_prompts()
 
-    prompt_template = """너는 답변만 하는 게 아니라, 실제 온실의 장비를 제어하는 관리자야.
-친절한 스마트팜 전문가로서 다음 데이터를 바탕으로 사용자의 질문에 답해줘.
-센서 데이터가 있다면 그 수치가 적절한지도 판단해줘. (참고: 토마토 생육 적정 온도는 20~25도, 습도는 60~80%, CO2는 400~800ppm 수준임)
+    # 프론트엔드 마크다운 파싱 오류 방지를 위한 기술적 제약 추가 (문서 외 런타임 제약)
+    runtime_constraints = (
+        "[출력 형식 제약 - 절대 준수]\n"
+        "답변을 작성할 때 `##`, `###` 같은 마크다운 제목(Heading) 태그는 프론트엔드 파싱 오류를 유발하므로 절대 사용하지 마십시오.\n"
+        "대신 가독성을 위해 명확한 줄바꿈(\\n)과 볼드체(**텍스트**), 그리고 글머리 기호(*)만 사용하여 깔끔하게 본문 형태로만 작성하십시오."
+    )
 
-[중요 지시사항]
-환경 개선이 필요한 경우 반드시 `control_sequence` 리스트에 환기팬 가동, 제습기 가동 같은 구체적인 장비 제어 명령을 포함해줘.
-센서 데이터가 없거나 제어가 필요 없는 일반 질문일 경우 `control_sequence`는 빈 리스트 []로 반환해야 해.
-만약 [검색된 농업 지침]이 존재할 경우, 이를 '농업기술길잡이(토마토)의 공인 지침'으로 간주하고 답변의 핵심 근거로 사용해야 해.
-답변 시작 시 혹은 근거 제시 시 "농업기술길잡이(토마토) 지침에 따르면..."이라는 문구를 반드시 포함하여 신뢰도를 높여줘.
+    # 최종 프롬프트 템플릿 조립
+    prompt_template = f"""{tomato_prompt}
 
-[출력 형식 제약 - 절대 준수]
-답변을 작성할 때 `##`, `###` 같은 마크다운 제목(Heading) 태그는 프론트엔드 파싱 오류를 유발하므로 절대 사용하지 마십시오.
-대신 가독성을 위해 명확한 줄바꿈(\n)과 볼드체(**텍스트**), 그리고 글머리 기호(*)만 사용하여 깔끔하게 본문 형태로만 작성하십시오.
+{runtime_constraints}
 
-[사용자 질문]
-{query}
-
-[수집된 센서 데이터]
-{sensor_data_str}
-
-[검색된 농업 지침]
-{docs_str}
+{main_template}
 """
 
     try:
-        llm = _get_gemini_llm(temperature=0.7)
+        llm = _get_gemini_llm(temperature=llm_temp)
         structured_llm = llm.with_structured_output(AgentResponse)
 
         prompt = PromptTemplate.from_template(prompt_template)
         chain = prompt | structured_llm
-
+        
+        diagnosis_str = state.get("diagnosis", "추가 진단 정보 없음")
+        
         response: AgentResponse = chain.invoke({
             "query": query,
             "sensor_data_str": sensor_data_str,
-            "docs_str": docs_str
+            "diagnosis_str": diagnosis_str,
+            "docs_str": docs_str,
+            "system_instruction": system_instruction
         })
 
         answer = response.answer
         # Pydantic 모델의 딕셔너리 변환 (API 호환성을 위해 dict 리스트도 별도 유지)
-        control_sequence_dicts = [cmd.dict() for cmd in response.control_sequence]
+        control_sequence_dicts = [cmd.model_dump() for cmd in response.control_sequence]
         control_sequence_objs = response.control_sequence
 
         # ── KS X 3267 Modbus RTU 프레임 변환 (Protocol Translator) ──
@@ -621,11 +641,13 @@ def generate_answer(state: dict) -> dict:
         control_sequence_dicts = []
         control_sequence_objs = None
         modbus_frames = None
+        answer_source = "LLM_ERROR"
         
     print(f"[Node: generate_answer] 생성된 답변 길이: {len(answer)}자, 제어 명령 수: {len(control_sequence_dicts)}, Modbus 프레임 수: {len(modbus_frames) if modbus_frames else 0}")
 
     return {
         "answer": answer,
         "control_sequence": control_sequence_dicts,
-        "modbus_frames": modbus_frames
+        "modbus_frames": modbus_frames,
+        "answer_source": answer_source,
     }

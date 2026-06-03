@@ -100,7 +100,6 @@ export const useAgentStore = defineStore('agent', {
   actions: {
     _resetData() {
       this.intents = { is_sensor_needed: false, is_rag_needed: false }
-      this.sensorData = null
       this.controlSequence = null
       this.modbusFrames = []
       this.answer = ''
@@ -110,7 +109,7 @@ export const useAgentStore = defineStore('agent', {
 
     _applyResponse(data) {
       this.intents = data.intents ?? this.intents
-      this.sensorData = data.sensor_data ?? null
+      this.sensorData = data.sensor_data ?? this.sensorData
       this.controlSequence = data.control_sequence ?? null
       this.modbusFrames = data.modbus_frames ?? []
       this.answer = data.answer ?? ''

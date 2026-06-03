@@ -87,6 +87,7 @@ export const useAgentStore = defineStore('agent', {
     simulationNotice: '',
     isInjectingAnomaly: false,
     isFallbackMode: false,
+    answerSource: '', // RAG, LLM_PARAMETRIC, LLM_ERROR 등
     lastError: null,
   }),
 
@@ -103,6 +104,7 @@ export const useAgentStore = defineStore('agent', {
       this.controlSequence = null
       this.modbusFrames = []
       this.answer = ''
+      this.answerSource = ''
       this.lastError = null
       this.isFallbackMode = false
     },
@@ -110,9 +112,11 @@ export const useAgentStore = defineStore('agent', {
     _applyResponse(data) {
       this.intents = data.intents ?? this.intents
       this.sensorData = data.sensor_data ?? this.sensorData
+      // 백엔드의 'reason'을 프론트엔드에서 일관되게 처리 (필요시 mapping)
       this.controlSequence = data.control_sequence ?? null
       this.modbusFrames = data.modbus_frames ?? []
       this.answer = data.answer ?? ''
+      this.answerSource = data.answer_source ?? ''
     },
 
     async sendAgentQuery(text) {
@@ -151,6 +155,7 @@ export const useAgentStore = defineStore('agent', {
         role: 'agent',
         text: this.answer,
         isFallback: this.isFallbackMode,
+        answerSource: this.answerSource,
         timestamp: new Date(),
       })
 

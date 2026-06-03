@@ -7,7 +7,7 @@ from app.agent.tools.smartfarm_api import get_smartfarm_sensor_data
 import json
 import re
 import struct
-from prompt_parser import load_system_prompts
+from app.agent.prompt_parser import load_system_prompts
 from pathlib import Path
 
 # DB session and models for node-level persistence (SessionLocal used directly)
@@ -377,6 +377,14 @@ def analyze_query(state: dict) -> dict:
         is_sensor_needed = result.is_sensor_needed
         is_rag_needed = result.is_rag_needed
         reason = result.reason
+        
+        print(f"[Node: analyze_query] 분석 결과 - 센서: {is_sensor_needed}, RAG: {is_rag_needed} (이유: {reason})")
+
+        return {
+            "is_sensor_needed": is_sensor_needed,
+            "is_rag_needed": is_rag_needed,
+            "sensor_data": None  # 새로운 턴 시작 시 이전 상태 초기화
+        }
     except Exception as e:
         print(f"[Node: analyze_query] Gemini LLM 호출 실패 (API 키 확인 필요). 에러: {e}")
 
@@ -511,60 +519,39 @@ def generate_answer(state: dict) -> dict:
     """
     수집된 모든 데이터(센서, RAG 지식)를 종합하여
     최종적으로 사용자에게 반환할 답변과 제어 시퀀스를 생성하는 노드.
-    RAG 지식 공백 시 유연한 우회 정책 및 출처 플래그를 추가로 반영했습니다.
+    프롬프트 구성 요소를 AGENTS.md에서 동적으로 로드합니다.
     """
     print("[Node: generate_answer] 최종 답변 생성 시작")
     query = state.get("query", "")
     sensor_data = state.get("sensor_data", {})
     retrieved_docs = state.get("retrieved_docs", [])
 
-    # 센서 데이터 포맷팅
+    # 1. 프롬프트 구성 요소 로드
+    prompt_components = load_system_prompts()
+    
+    # 2. 센서 데이터 포맷팅
     sensor_data_str = (
         json.dumps(sensor_data, ensure_ascii=False)
         if sensor_data
         else "센서 데이터가 필요하지 않은 질문이거나 조회되지 않음"
     )
 
-    # RAG 결과 유무에 따른 동적 프롬프트 지시사항 및 출처 플래그 설정
+    # 3. 상황별 동적 지시사항 및 데이터 설정
     if not retrieved_docs:
-        print("[Node: generate_answer] 3단계(Soft Fallback) 전환: 자율 제어 차단 및 일반 지식 답변")
+        print("[Node: generate_answer] Soft Fallback: RAG 실패 지시사항 적용")
         docs_str = "경고: 현재 사용자의 질문과 관련된 공인 농업기술길잡이 지침을 찾을 수 없습니다."
-        answer_source = "LLM_PARAMETRIC"  # 프론트엔드 안내 문구용 플래그
-        llm_temp = 0.4  # 외부 지식 참조가 없으므로 temperature를 낮춰 환각(Hallucination) 방지
-        
-        system_instruction = (
-            "현재 [검색된 농업 지침]이 비어있습니다. 일반적인 농업 지식을 활용해 답변하되 다음 규칙을 **절대적으로** 준수하십시오.\n"
-            "1. 답변 서두에 반드시 '공인 지침서에서 관련 내용을 찾지 못해 AI 검색 기반으로 답변드립니다. 실제 온실 적용 시 주의하십시오.'라는 경고 문구를 포함하십시오.\n"
-            "2. [제어 권한: 차단]: 공인 지침이 없으므로 기계 오작동 방지를 위해 하드웨어 자율 제어는 절대 불가합니다. 어떠한 경우에도 제어 명령을 생성하지 말고 `control_sequence`는 반드시 빈 리스트 `[]`로 반환하십시오.\n"
-            "3. 온실 환경 조절이 필요해 보이는 상황이라면, 농업인(사용자)의 판단하에 직접 수동으로 제어하도록 제안하는 텍스트만 출력하십시오. (예: '일반적인 농업 지식에 따르면 환기가 필요할 수 있습니다. 농업인의 판단하에 대시보드에서 수동으로 환풍기를 가동해 주시기 바랍니다.')"
-        )
+        system_instruction = prompt_components["rag_failure_instruction"]
+        answer_source = "LLM_PARAMETRIC"
+        llm_temp = 0.4
     else:
-        docs_str = "\n".join([doc["content"] for doc in retrieved_docs]) if retrieved_docs else "검색된 관련 지침 없음"
-        answer_source = "RAG"  # 공인 지침 기반 답변 플래그
-        llm_temp = 0.7  # 지침서 기반의 풍부한 추론을 위해 기존 temperature 유지
+        docs_str = "\n".join([doc["content"] for doc in retrieved_docs])
+        system_instruction = prompt_components["rag_success_instruction"]
+        answer_source = "RAG"
+        llm_temp = 0.7
         
-        system_instruction = (
-            "현재 [검색된 농업 지침]이 존재합니다. 이를 '농업기술길잡이(토마토)의 공인 지침'으로 간주하고 답변의 핵심 근거로 사용하십시오.\n"
-            "1. 답변 시작 시 혹은 근거 제시 시 \"농업기술길잡이(토마토) 지침에 따르면...\"이라는 문구를 반드시 포함하여 신뢰도를 높이십시오.\n"
-            "2. [제어 권한: 승인]: 공인 지침에 명확한 근거가 있고, 제공된 [수집된 센서 데이터]가 그 기준을 벗어났다면, 적극적으로 환경 개선을 위한 제어 장치(환풍기, 창문 개폐 등) 명령을 `control_sequence`에 포함하여 자율 제어를 수행하십시오."
-        )
-        
-    tomato_prompt, main_template = load_system_prompts()
-
-    # 프론트엔드 마크다운 파싱 오류 방지를 위한 기술적 제약 추가 (문서 외 런타임 제약)
-    runtime_constraints = (
-        "[출력 형식 제약 - 절대 준수]\n"
-        "답변을 작성할 때 `##`, `###` 같은 마크다운 제목(Heading) 태그는 프론트엔드 파싱 오류를 유발하므로 절대 사용하지 마십시오.\n"
-        "대신 가독성을 위해 명확한 줄바꿈(\\n)과 볼드체(**텍스트**), 그리고 글머리 기호(*)만 사용하여 깔끔하게 본문 형태로만 작성하십시오."
-    )
-
-    # 최종 프롬프트 템플릿 조립
-    prompt_template = f"""{tomato_prompt}
-
-{runtime_constraints}
-
-{main_template}
-"""
+    # 4. 최종 프롬프트 구성 (AGENTS.md의 마스터 템플릿 사용)
+    # 템플릿 내의 변수들을 invoke 시점에 한꺼번에 주입합니다.
+    prompt_template = prompt_components["main_prompt"]
 
     try:
         llm = _get_gemini_llm(temperature=llm_temp)
@@ -576,23 +563,24 @@ def generate_answer(state: dict) -> dict:
         diagnosis_str = state.get("diagnosis", "추가 진단 정보 없음")
         
         response: AgentResponse = chain.invoke({
+            "tomato_system_prompt": prompt_components["tomato_prompt"],
+            "runtime_constraints": prompt_components["runtime_constraints"],
+            "system_instruction": system_instruction,
             "query": query,
             "sensor_data_str": sensor_data_str,
             "diagnosis_str": diagnosis_str,
-            "docs_str": docs_str,
-            "system_instruction": system_instruction
+            "docs_str": docs_str
         })
 
         answer = response.answer
-        # Pydantic 모델의 딕셔너리 변환 (API 호환성을 위해 dict 리스트도 별도 유지)
+        # Pydantic 모델의 딕셔너리 변환
         control_sequence_dicts = [cmd.model_dump() for cmd in response.control_sequence]
         control_sequence_objs = response.control_sequence
 
-        # ── KS X 3267 Modbus RTU 프레임 변환 (Protocol Translator) ──
+        # ── KS X 3267 Modbus RTU 프레임 변환 ──
         if control_sequence_objs:
             modbus_frames = ModbusTranslator.build_frames(control_sequence_objs)
-
-            # Persist control logs for each issued control command (best-effort)
+            # (DB 로깅 로직 보존)
             try:
                 db = SessionLocal()
                 try:
@@ -601,50 +589,34 @@ def generate_answer(state: dict) -> dict:
                         device = cmd.device if isinstance(cmd.device, str) else getattr(cmd.device, 'value', str(cmd.device))
                         action = cmd.action if isinstance(cmd.action, str) else getattr(cmd.action, 'value', str(cmd.action))
                         value = getattr(cmd, 'value', None) if hasattr(cmd, 'value') else None
-                        # Build the hex frame for logging (translator returns '[Tx] ...' or warning)
                         try:
                             hex_frame = ModbusTranslator.translate(device, action, float(value) if value is not None else None)
                         except Exception:
                             hex_frame = ""
 
-                        control_log = ControlLog(
-                            device_code=str(device),
-                            action=str(action),
-                            hex_frame=str(hex_frame),
-                            reason=reason_text,
-                        )
+                        control_log = ControlLog(device_code=str(device), action=str(action), hex_frame=str(hex_frame), reason=reason_text)
                         db.add(control_log)
                     db.commit()
                 except Exception as db_e:
-                    print(f"[Node: generate_answer] DB 저장 중 오류 발생: {db_e}")
-                    try:
-                        db.rollback()
-                    except Exception:
-                        pass
+                    print(f"[Node: generate_answer] DB 저장 오류: {db_e}")
+                    db.rollback()
                 finally:
-                    try:
-                        db.close()
-                    except Exception:
-                        pass
+                    db.close()
             except Exception as e_db:
-                print(f"[Node: generate_answer] DB 세션 생성 실패 또는 에러: {e_db}")
-
+                print(f"[Node: generate_answer] DB 세션 에러: {e_db}")
         else:
             modbus_frames = None
 
     except Exception as e:
         print(f"[Node: generate_answer] 답변 생성 실패: {e}")
         answer = (
-            "죄송합니다. 현재 AI 서버(Gemini) 모델과의 통신이 원활하지 않아 답변을 생성하지 못했습니다.\n\n"
+            "죄송합니다. 현재 AI 서버와의 통신이 원활하지 않아 답변을 생성하지 못했습니다.\n\n"
             f"[디버그용 수집 데이터]\n- 센서: {sensor_data_str}"
         )
         control_sequence_dicts = []
-        control_sequence_objs = None
         modbus_frames = None
         answer_source = "LLM_ERROR"
         
-    print(f"[Node: generate_answer] 생성된 답변 길이: {len(answer)}자, 제어 명령 수: {len(control_sequence_dicts)}, Modbus 프레임 수: {len(modbus_frames) if modbus_frames else 0}")
-
     return {
         "answer": answer,
         "control_sequence": control_sequence_dicts,

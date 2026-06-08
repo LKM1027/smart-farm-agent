@@ -16,7 +16,7 @@
 | 하드웨어 제어 | Modbus RTU (KS X 3267) | RS485 기반 PLC 제어 명령 변환 |
 | 데이터베이스 | SQLite (`smartfarm.db`) | 센서 로그, 제어 로그, 주간 리포트 저장 |
 | 프론트엔드 | Vue.js 3 + Pinia + Vite | 대시보드, 채팅, 아카이브 UI |
-| 지식 베이스 | ChromaDB (RAG) | KS 표준 문서 5종 벡터 검색 |
+| 지식 베이스 | ChromaDB (RAG) | 농업기술길잡이(토마토) 벡터 검색 |
 
 ---
 
@@ -129,7 +129,7 @@ app.include_router(reports.router, prefix="/api/reports", tags=["Weekly Reports"
 
 [필수 제약 사항 - 제어 시퀀스]
 1. 사용자가 환경 기준이나 제어 조건을 물어볼 때, 단순히 기준만 설명하지 마십시오. 
-2. 반드시 함께 제공된 '현재 온실 센서 데이터'를 기준과 대조해 보고, 기준을 벗어났다면 적절한 제어 장치(예: 천창 CC01, 측창 CC02, 환풍기 CC18 등)를 가동하는 명령을 `control_sequence`에 반드시 포함하십시오.
+2. 반드시 함께 제공된 '현재 온실 센서 데이터'를 기준과 대조해 보고, 기준을 벗어났다면 적절한 제어 장치(예: 천창 CC01, 측창 CC03, 환풍기 CC18 등)를 가동하는 명령을 `control_sequence`에 반드시 포함하십시오.
 3. 환경 개선이 필요한 경우 `control_sequence` 리스트에 환풍기 가동, 냉난방기 가동 같은 구체적인 장비 제어 명령(JSON)을 포함하십시오.
 4. 센서 데이터가 없거나 제어가 필요 없는 일반 질문일 경우 `control_sequence`는 빈 리스트 []로 반환해야 합니다.
 
@@ -145,11 +145,11 @@ app.include_router(reports.router, prefix="/api/reports", tags=["Weekly Reports"
 
 [제어 규칙]
 1. KS X 3265/3288 표준에 준수하는 장치 코드와 액션만 사용해야 합니다.
-   - CC01/CC02/CC03/CC04: OPEN / STOP / CLOSE (value null)
+   - CC01/CC03/CC05/CC04: OPEN / STOP / CLOSE (value null)
    - CC18: ON / OFF / SET_LV (value 0.0~100.0)
-   - CC19: ON / OFF
-   - CC21 / CC21_V: ON / OFF
-   - CC22: ON / OFF / SET_TEMP (value 15.0~35.0)
+   - CC08: ON / OFF
+   - CC26 / CC27: ON / OFF
+   - CC23: ON / OFF / SET_TEMP (value 15.0~35.0)
    - NU_EC_SET: NU_EC_SET (value 0.0~10.0, dS/m)
    - NU_PH_SET: NU_PH_SET (value 2.0~12.0, pH)
    - NU_VALVE: NU_ON / NU_OFF / NU_AREA_ON / NU_PARAM_ON
@@ -158,7 +158,7 @@ app.include_router(reports.router, prefix="/api/reports", tags=["Weekly Reports"
    - 예: EC 2.5 dS/m, pH 6.0
 
 3. 센서 수치를 언급할 때 KS X 3266 센서 코드명을 함께 표기하세요.
-   - TI(온도), HI(습도), CI(CO₂), EI(EC), PI(pH), SI(일사량)
+   - TI(온도), HI(습도), CI(CO₂), EI(EC), PI(pH), IS(일사량)
 
 [사용자 질문]
 {query}
@@ -217,10 +217,15 @@ app.include_router(reports.router, prefix="/api/reports", tags=["Weekly Reports"
 온실 환경의 센서 데이터 조회가 필요한지(is_sensor_needed)와
 농업 지침 검색(RAG)이 필요한지(is_rag_needed)를 판단해줘.
 
-[판단 필수 지침]
-1. (가장 중요) 사용자의 질문에 '현재', '상태', 'VPD', '온도', '습도', 'CO2', 'CO₂' 등의 키워드가 포함되어 있거나, 무언가 기준(적정 농도, 환기 조건 등)을 물어보며 실시간 환경 진단이 필요해 보이면, 무조건(MUST) `is_sensor_needed`를 True로 판단하라. 
-2. '어떻게', '방법', '방제', '대처', '알려줘', '기준', '얼마면' 등이 포함되면 is_rag_needed를 True로 설정해.
-3. 시각적 판독이나 이미지 기반 진단 관련 표현은 현재 처리하지 않으므로, 그런 항목이 있어도 is_sensor_needed 또는 is_rag_needed로만 판단해줘.
+[판단 원칙 — 지능적 분석]
+1. (is_sensor_needed): 질문에 특정 키워드가 없더라도, 작물의 이상 증상(시듦, 변색, 마름 등)에 대한 '원인'을 묻거나 '현재 상황'에 대한 진단이 목적이라면 무조건 True로 설정하라. (환경 데이터 없이는 진단이 불가능함을 인지할 것)
+2. (is_rag_needed): 재배 지침, 병해충 방제법, 장비 표준 규격 등 '지식 베이스'의 확인이 필요한 경우 True로 설정하라.
+3. (복합 질문): "왜 이래?", "도와줘" 같이 모호한 요청은 실시간 센서 데이터와 공인 지침을 모두 참조하도록 두 항목 모두 True로 설정하라.
+
+[출력 형식]
+반드시 JSON 형식만 반환하며, 부연 설명 없이 결과값만 간결하게 출력하라.
+1. 'reason' 필드는 판단 근거를 10자 이내의 단답형으로만 작성하라. (예: "증상 진단 필요", "재배 방법 문의")
+2. JSON 예시 : {"is_sensor_needed": true, "is_rag_needed": true, "reason": "증상 진단 필요"}
 
 사용자 질문: {query}
 ```
@@ -266,20 +271,3 @@ app.include_router(reports.router, prefix="/api/reports", tags=["Weekly Reports"
 - [ ] 프롬프트 수정 → `AGENTS.md` 섹션 4/5 업데이트 + `nodes.py` 로딩 경로 확인
 - [ ] 새 Python 패키지 추가 → `requirements.txt` 업데이트
 - [ ] 새 npm 패키지 추가 → `package.json` 확인
-
----
-
-## 9. 아키텍처 결정 기록 (ADR)
-
-### ADR-001: LangGraph 채택 (2026-05)
-- **결정**: LangChain 대신 LangGraph로 에이전트 워크플로우 구성
-- **이유**: 의도 분석 → 센서 조회 → RAG 검색의 조건부 분기가 State Machine으로 명확하게 표현됨
-
-### ADR-002: SQLite 채택 (2026-05)
-- **결정**: PostgreSQL 대신 SQLite 사용
-- **이유**: 단일 엣지 노드(Edge Node) 환경에서의 단순 배포. 외부 DB 서버 불필요.
-
-### ADR-003: 디렉토리 구조 확정 (2026-06-01)
-- **결정**: `schemas/`, `services/` 복수형 고정. `models.py` 단일 파일 고정.
-- **이유**: AI 코딩 어시스턴트 진입 시 `schema/`와 `schemas/`, `models/`와 `models.py` 혼재로 인한 잘못된 경로 선택 방지.
-- **조치**: `app/models/`, `app/repository/`, `app/repositories/`, `app/schema/`, `app/service/`, `app/db/` 6개 빈 디렉토리 삭제 완료.

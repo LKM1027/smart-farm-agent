@@ -4,58 +4,49 @@ from enum import Enum
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# KS X 3266:2022  스마트 온실을 위한 센서 인터페이스
+# 농림축산식품부 스마트팜 데이터 마트 기반 센서 인터페이스
 # ──────────────────────────────────────────────────────────────────────────────
 class SensorCode(str, Enum):
     """
-    KS X 3266:2022 표준 센서 항목 코드 (온실 통합 제어기 ↔ 센서 노드 인터페이스)
-    측정 범위 및 단위는 KS X 3266 표 3(13종 센서 규격 요약) 기준
+    농림축산식품부 스마트팜 데이터 마트 환경정보 데이터 기준 센서 항목 코드
     """
-    TEMPERATURE   = "TI"      # 온도 (℃),  측정 범위: -20 ~ 80 ℃
-    HUMIDITY      = "HI"      # 상대습도 (%), 측정 범위: 0 ~ 100 %
-    CO2           = "CI"      # CO₂ 농도 (ppm), 0 ~ 3,000 ppm
-    SOLAR         = "SI"      # 일사량 (W/m²), 0 ~ 2,000 W/m²
-    WIND_DIR      = "WDI"     # 풍향 (°), 0 ~ 360°
-    WIND_SPEED    = "WSI"     # 풍속 (m/s), 0 ~ 40 m/s
-    RAIN          = "RI"      # 강우 감지 (ON/OFF)
-    QUANTUM       = "QI"      # 광양자량 (μmol/m²/s), 0 ~ 2,000
-    SOIL_MOISTURE = "SMI"     # 토양 수분 (% vol), 0 ~ 50 % vol
-    SOIL_TENSION  = "STI"     # 토양 수분 장력 (kPa), 0 ~ -100 kPa
-    EC            = "EI"      # 전기전도도 / 양액 EC (dS/m), 0 ~ 10 dS/m
-    PH            = "PI"      # 수소이온농도 / 양액 pH, 2 ~ 12 pH
-    SOIL_TEMP     = "SOILTI"  # 지온 (℃), -20 ~ 80 ℃
+    TEMPERATURE   = "TI"      # 내부온도 (℃)
+    HUMIDITY      = "HI"      # 내부습도 (%)
+    CO2           = "CI"      # 내부 CO₂ 농도 (ppm)
+    SOLAR         = "IS"      # 내부 조도/일사량 (외부 일사량은 SR)
+    WIND_DIR      = "WD"      # 외부풍향
+    WIND_SPEED    = "WS"      # 풍속 (내부/외부 공통 사용)
+    RAIN          = "RP"      # 강우감지 (외부강우량은 RF)
+    QUANTUM       = "PD"      # 광양자수
+    SOIL_MOISTURE = "MC"      # 토양함수율
+    SOIL_TENSION  = "MT"      # 토양수분장력
+    EC            = "EI"      # (양액)공급EC (토양EC는 EL)
+    PH            = "PI"      # (양액)공급PH (토양PH는 PL)
+    SOIL_TEMP     = "TL"      # 지중온도/지온 (지면온도는 ST)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# KS X 3265:2022  스마트 온실을 위한 구동기 인터페이스
+# 농림축산식품부 스마트팜 데이터 마트 기반 구동기 인터페이스
 # ──────────────────────────────────────────────────────────────────────────────
 class HardwareDevice(str, Enum):
     """
-    KS X 3265:2022 구동기 인터페이스 표준 장치 코드 (fatrCode 기반)
-    +
-    KS X 3288:2022 양액기 노드 Modbus 인터페이스 기반 양액기 제어 코드 (신규 추가)
-
-    작동 방식 분류 (KS X 3265 §4.3):
-      [스위치 정/OFF/역 방식] 천창, 측창, 보온커튼, 차광막 → ControlAction: OPEN/STOP/CLOSE
-      [ON/OFF 방식]          환풍기, 유동팬, 관수모터, 관수밸브, 냉난방기 → ControlAction: ON/OFF
-      [양액기 Modbus 제어]   KS X 3288 제어 명령 코드(401~403) 기반 → ControlAction: NU_ON/NU_OFF/NU_AREA_ON/NU_PARAM_ON
+    농림축산식품부 스마트팜 데이터 마트 환경정보 데이터 기준 구동기 코드
     """
-    # ── KS X 3265 구동기 (9종) ──
-    ROOF_VENT       = "CC01"     # 천창 (천장 개폐기)    — 정/OFF/역 방향 제어
-    SIDE_VENT       = "CC02"     # 측창 (측면 개폐기)    — 정/OFF/역 방향 제어
-    THERMAL_SCREEN  = "CC03"     # 보온커튼             — 정/OFF/역 방향 제어
-    SHADE_SCREEN    = "CC04"     # 차광막              — 정/OFF/역 방향 제어
-    EXHAUST_FAN     = "CC18"     # 환풍기 (배기팬)      — ON/OFF (SET_LV 레벨 제어 가능)
-    CIRCULATION_FAN = "CC19"     # 유동팬              — ON/OFF
-    IRRIGATION_PUMP = "CC21"     # 관수모터 (관수펌프)   — ON/OFF
-    IRRIGATION_VALVE = "CC21_V"  # 관수밸브 (구역 밸브) — ON/OFF
-    HVAC            = "CC22"     # 냉난방기             — ON/OFF (SET_TEMP 목표온도 설정 가능)
+    # ── 데이터 마트 기반 구동기 ──
+    ROOF_VENT       = "CC01"     # 천창
+    SIDE_VENT       = "CC03"     # 측창 (CC02는 이중창)
+    THERMAL_SCREEN  = "CC05"     # 보온커튼
+    SHADE_SCREEN    = "CC04"     # 차광커튼
+    EXHAUST_FAN     = "CC18"     # 배기팬 (환풍기)
+    CIRCULATION_FAN = "CC08"     # 유동팬
+    IRRIGATION_PUMP = "CC26"     # 관수모터
+    IRRIGATION_VALVE = "CC27"    # 관수밸브
+    HVAC            = "CC23"     # 냉난방기 (CC22는 습도관리장치)
 
-    # ── KS X 3288 양액기 Modbus 제어 코드 (신규 추가, 3종) ──
-    NU_EC_SET = "NU_EC_SET"   # 양액 EC 목표값 설정 (Modbus reg 510, float dS/m)
-    NU_PH_SET = "NU_PH_SET"   # 양액 pH 목표값 설정 (Modbus reg 512, float pH)
-    NU_VALVE  = "NU_VALVE"    # 관수 구역 밸브 작동 (Modbus reg 506-507, AREA_ON=402)
-
+    # ── 양액기 Modbus 제어 코드 ──
+    NU_EC_SET = "NU_EC_SET"   
+    NU_PH_SET = "NU_PH_SET"   
+    NU_VALVE  = "NU_VALVE"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # KS X 3265:2022  제어 액션 코드

@@ -136,36 +136,36 @@ class TestRoofVentFrame:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CC22 냉난방기 (SlaveID=0x09, RegAddr=0x0318) 프레임 검증
+# CC23 냉난방기 (SlaveID=0x09, RegAddr=0x0318) 프레임 검증
 # ─────────────────────────────────────────────────────────────────────────────
 
 @pytest.mark.unit
 class TestHVACFrame:
-    """CC22 냉난방기 Modbus RTU 프레임 생성 검증."""
+    """CC23 냉난방기 Modbus RTU 프레임 생성 검증."""
 
     def test_hvac_slave_id(self):
-        """CC22 → SlaveID는 0x09이어야 함."""
-        frame = ModbusTranslator.translate("CC22", "ON")
+        """CC23 → SlaveID는 0x09이어야 함."""
+        frame = ModbusTranslator.translate("CC23", "ON")
         parts = _parse_frame(frame)
         assert parts[0] == 0x09
 
     def test_hvac_set_temp_encoding(self):
-        """CC22 SET_TEMP 25.0℃ → Data는 250(×10 인코딩)이어야 함."""
-        frame = ModbusTranslator.translate("CC22", "SET_TEMP", value=25.0)
+        """CC23 SET_TEMP 25.0℃ → Data는 250(×10 인코딩)이어야 함."""
+        frame = ModbusTranslator.translate("CC23", "SET_TEMP", value=25.0)
         parts = _parse_frame(frame)
         data = (parts[4] << 8) | parts[5]
         assert data == 250, f"SET_TEMP 25.0→250 기대, {data} 수신"
 
     def test_hvac_set_temp_35_encoding(self):
-        """CC22 SET_TEMP 35.0℃ → Data는 350이어야 함."""
-        frame = ModbusTranslator.translate("CC22", "SET_TEMP", value=35.0)
+        """CC23 SET_TEMP 35.0℃ → Data는 350이어야 함."""
+        frame = ModbusTranslator.translate("CC23", "SET_TEMP", value=35.0)
         parts = _parse_frame(frame)
         data = (parts[4] << 8) | parts[5]
         assert data == 350
 
     def test_hvac_crc_valid(self):
-        """CC22 SET_TEMP 프레임의 CRC16이 유효해야 함."""
-        frame = ModbusTranslator.translate("CC22", "SET_TEMP", value=22.0)
+        """CC23 SET_TEMP 프레임의 CRC16이 유효해야 함."""
+        frame = ModbusTranslator.translate("CC23", "SET_TEMP", value=22.0)
         parts = _parse_frame(frame)
         assert _verify_crc16(parts)
 

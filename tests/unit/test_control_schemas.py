@@ -62,7 +62,7 @@ class TestHVACTemperatureGuardrail:
         assert cmd.value == 25.0
 
     def test_hvac_on_action_accepted(self):
-        """CC22 ON 명령은 value 없이 허용되어야 함."""
+        """CC23 ON 명령은 value 없이 허용되어야 함."""
         cmd = _make_cmd(HardwareDevice.HVAC, ControlAction.ON)
         assert cmd.device == HardwareDevice.HVAC
         assert cmd.action == ControlAction.ON

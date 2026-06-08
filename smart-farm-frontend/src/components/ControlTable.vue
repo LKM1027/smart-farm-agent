@@ -175,14 +175,14 @@ function terminalLineClass(line) {
 
 const DEVICE_INFO = {
   'CC01':     { 'name': '천창' },
-  'CC02':     { 'name': '측창' },
-  'CC03':     { 'name': '보온커튼' },
+  'CC03':     { 'name': '측창' },
+  'CC05':     { 'name': '보온커튼' },
   'CC04':     { 'name': '차광막' },
   'CC18':     { 'name': '환풍기' },
-  'CC19':     { 'name': '유동팬' },
-  'CC21':     { 'name': '관수펌프' },
-  'CC21_V':   { 'name': '관수밸브' },
-  'CC22':     { 'name': '냉난방기' },
+  'CC08':     { 'name': '유동팬' },
+  'CC26':     { 'name': '관수펌프' },
+  'CC27':     { 'name': '관수밸브' },
+  'CC23':     { 'name': '냉난방기' },
   'NU_EC_SET':{ 'name': 'EC설정' },
   'NU_PH_SET':{ 'name': 'pH설정' },
   'NU_VALVE': { 'name': '구역밸브' },
@@ -196,7 +196,7 @@ function actionClass(action) {
 }
 function valueUnit(device, action) {
   if (device === 'CC18') return '%'
-  if (device === 'CC22') return '℃'
+  if (device === 'CC23') return '℃'
   if (action.includes('EC')) return ' dS/m'
   if (action.includes('PH')) return ''
   return ''

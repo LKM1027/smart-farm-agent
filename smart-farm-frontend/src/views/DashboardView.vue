@@ -14,12 +14,7 @@
 
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <!-- 시뮬레이션 알림바 -->
-            <div
-              v-if="store.simulationNotice"
-              class="max-w-xl rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700"
-            >
-              {{ store.simulationNotice }}
-            </div>
+            
 
             <!-- 신규 디자인 적용된 AI 리포트 생성 버튼 -->
             <button

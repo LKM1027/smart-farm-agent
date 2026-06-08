@@ -267,7 +267,7 @@ UNSUPPORTED_CROP_RESPONSE = (
 class IntentAnalysis(BaseModel):
     is_sensor_needed: bool = Field(description="질문의 답변을 위해 환경 센서 데이터 조회가 필요한지 여부")
     is_rag_needed: bool = Field(description="질문의 답변을 위해 농업 지침 검색(RAG)이 필요한지 여부")
-    reason: str = Field(description="이러한 판단을 내린 이유 (간단히 작성)")
+    reason: Optional[str] = Field(None, description="이러한 판단을 내린 이유 (간단히 작성)")
 
 # ─────────────────────────────────────────────
 # LLM 구조화 출력 모델 (최종 답변 및 제어 명령용)
@@ -276,7 +276,7 @@ class ControlCommand(BaseModel):
     device: str = Field(description="제어할 장치 이름 (예: 환풍기(배기팬), 유동팬, 제습기, 천창, 측창 등)")
     action: str = Field(description="수행할 동작 (예: ON, OFF, OPEN, CLOSE 등)")
     value: Optional[float] = Field(None, description="설정할 값. 단위를 제외한 순수 숫자만 입력 (예: 50.0, 25.5 등)")
-    reason: str = Field(description="이 제어 동작을 수행하는 이유")
+    reason: Optional[str] = Field(None, description="이 제어 동작을 수행하는 이유")
 
 from pydantic import model_validator
 

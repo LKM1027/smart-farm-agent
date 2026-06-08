@@ -248,7 +248,7 @@ export const useAgentStore = defineStore('agent', {
             description: 'Roof vent open for heat exhaust',
           },
           {
-            device: 'CC02',
+            device: 'CC03',
             action: 'OPEN',
             value: null,
             description: 'Side vent open for heat exhaust',
@@ -264,7 +264,7 @@ export const useAgentStore = defineStore('agent', {
           '[CMD 02] device=CC01 action=OPEN value=null',
           '[Tx] 01 06 03 00 00 01 48 4E',
           '[Rx] 01 06 03 00 00 01 48 4E  ACK',
-          '[CMD 03] device=CC02 action=OPEN value=null',
+          '[CMD 03] device=CC03 action=OPEN value=null',
           '[Tx] 02 06 03 00 00 01 48 7D',
           '[Rx] 02 06 03 00 00 01 48 7D  ACK',
           '[SYS] Transmission complete. All commands dispatched.',
